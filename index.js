@@ -37,8 +37,7 @@ async function start(testFunction) {
 
 	let {name} = testFunction
 	if (name) {
-		console.log(chalk.bold.blue("🢚 "+name))
-		name += ' '
+		console.log(chalk.bold.blue("[ " + chalk.underline(name) + " ]"))
 	}
 
 	try {
@@ -46,11 +45,11 @@ async function start(testFunction) {
 		endStage()
 
 		if (totalErrors == 1)
-			console.log(chalk.bold.yellow(`One error occured during the test ${name}${sad()}\n`))
+			console.log(chalk.bold.yellow(`One error occured during the test ${chalk.underline(name)} ${sad()}\n`))
 		else if (totalErrors > 1)
-			console.log(chalk.bold.yellow(`${fails.length} errors occured during the test ${name}${sad()}\n`))
+			console.log(chalk.bold.yellow(`${fails.length} errors occured during the test ${chalk.underline(name)} ${sad()}\n`))
 		else
-			console.log(chalk.bold.green(`The test ${name}has been successfully passed ${happy()}\n`))
+			console.log(chalk.bold.green(`The test ${name} has successfully passed ${happy()}\n`))
 	}
 	catch (error) {
 		console.log(chalk.bold.red(`✗ ${currentStage} : a critical error occured ${sad()} :`))
@@ -90,7 +89,7 @@ function endStage() {
 	if (fails.length) {
 		console.log(chalk.bold.red("✗ "+currentStage))
 		for (const fail of fails)
-			console.log(chalk.gray.italic("  Error at : " + chalk.reset.bold.italic.red(fail)))
+			console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(fail)))
 		fails.length = 0
 		totalErrors++
 	}

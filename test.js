@@ -1,7 +1,7 @@
 
 const { start, stage, test } = require('./index')
 
-start(function() {
+start(function MySweetTest() {
 	stage("ZABU")
 	test(1 == 1, 'check raw equality')
 	test(1 == 2, 'Check raw equality')

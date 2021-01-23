@@ -1,33 +1,29 @@
 *FAst and smaRT TESTing*
 
+.. for those who want to enjoy simple and colorful tests without having to learn the whole ecosystem of a rich test library.
+
+![preview](preview.png)
+
 FarTest is an obvious, colorful and enjoyable test library for small applications.
 
-Your terminal need to accept UTF-8 characters and ANSI colors for a better experience.
-
-# Installation
+## Installation
 
 ```
 npm install --save-dev fartest
 ```
-In short :
-```
-npm i -D fartest
-```
 
-# Usage
-FarTest export three functions :
+## Usage
+FarTest simplest API export three functions :
 
-- *start* - start a new test,
-- *stage* - define the current stage inside a test,
-- *test* - check an assertion inside a test.
+- `start(test: Function)` - start a new test,
+- `stage(name: string)` - define the current stage inside a test,
+- `test(condition: boolean, name?: string)` - check an assertion inside a test. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
+
+And that's all. 
 
 First, let's import the functions we need :
 ```javascript
-const { start, stage, test } = require('fartest')
-```
-With ES modules :
-```javascript
-import { start, stage, test } from 'fartest')
+import { start, stage, test } from 'fartest'
 ```
 
 Then, we start the test :
@@ -52,9 +48,9 @@ start(async function MyAwesomeTest() {
 })
 ```
 
-## Test asynchronous functions
+### Test asynchronous functions
 
-Declare your main test functions as `async` and just use `await` anywhere an asynchronous function is used.
+Because your main test functions is declared as `async` you can just use `await` anywhere you need it.
 
 
 ## Running multiple tests
@@ -76,6 +72,7 @@ start(async function SuperCoolTest() {
 })
 ```
 
-## That's all...
+### Conclusion
+Congratulations! You've learned a new test library in less that 5 minutes!
 
 *Let's FarT!*
