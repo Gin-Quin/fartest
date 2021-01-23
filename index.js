@@ -6,6 +6,7 @@
 --------------------------------------*/
 
 const chalk = require('chalk')
+const deepEqual = require('./deepEqual.js')
 
 if (!chalk)
 	throw '`npm install` is necessary'
@@ -97,15 +98,18 @@ function endStage() {
 		console.log(chalk.green("✓ "+currentStage))
 }
 
-function test(conditionA, testDescription='') {
-	if (conditionA) return
-	fails.push(testDescription)
+function test(conditionA, description='') {
+	if (!conditionA) fails.push(testDescription)
 }
 
+function same(valueA, valueB, description='') {
+	test(deepEqual(valueA, valueB), description)
+}
 
 module.exports = {
 	start,
 	starTest: start,  // for retro-compatibility
 	stage,
 	test,
+	same,
 }

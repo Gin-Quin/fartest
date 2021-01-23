@@ -4,7 +4,7 @@
 
 ![preview](preview.png)
 
-FarTest is an obvious, colorful and enjoyable test library for small applications.
+FarTest is an obvious, colorful and enjoyable test library for small applications. It does not do cool stuff like code coverage, but you'll learn to use in no time.
 
 ## Installation
 
@@ -18,6 +18,7 @@ FarTest simplest API export three functions :
 - `start(test: Function)` - start a new test,
 - `stage(name: string)` - define the current stage inside a test,
 - `test(condition: boolean, name?: string)` - check an assertion inside a test. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
+- `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type : numbers, strings, arrays, maps, sets, ...
 
 And that's all. 
 
@@ -42,6 +43,13 @@ start(async function MyAwesomeTest() {
 
   stage('A simple test which will not succeed')
     test(21 === "21", "Test description")  // will fail because types don't match
+    same(21, "21", "Test description")  // will fail as well
+
+  stage('Comparing objects')
+    same({x: 1, y: 2}, {x: 1, y: 2})  // will pass
+
+  stage('Comparing object and array')
+    same(['foo'], {0: 'foo'})  // will not pass
 
   stage('Crash test')
     undefined.coco = 321321  // any invalid code will be caught
@@ -59,10 +67,13 @@ You can run multiple tests at once, in which case they will be executed one afte
 // test 1
 start(async function CoolTest() {
   stage('1 == 1')
-    test(1 == 1)
+    test(1 == 1)  // ok, pass
 
   stage('2 == "2"')
-    test(2 == "2")
+    test(2 == "2")  // also pass because non-strict equality
+
+  stage('same(2, "2")')
+    same(2, "2")  // does not pass
 })
 
 // test 2
@@ -74,5 +85,7 @@ start(async function SuperCoolTest() {
 
 ### Conclusion
 Congratulations! You've learned a new test library in less that 5 minutes!
+
+What you waiting for?
 
 *Let's FarT!*
