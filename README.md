@@ -13,7 +13,7 @@ npm install --save-dev fartest
 ```
 
 ## Usage
-FarTest simplest API export three functions :
+FarTest simplest API export four functions :
 
 - `start(test: Function)` - start a new test,
 - `stage(name: string)` - define the current stage inside a test,
