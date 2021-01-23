@@ -2,7 +2,7 @@
 
 .. for those who want to enjoy simple and colorful tests without having to learn the whole ecosystem of a rich test library.
 
-![preview](preview.png)
+![preview](https://i.ibb.co/kXJ7YWV/preview.png)
 
 FarTest is an obvious, colorful and enjoyable test library for small applications. It does not do cool stuff like code coverage, but you'll learn to use in no time.
 
