@@ -5,21 +5,122 @@
 	easy and fast testing.
 --------------------------------------*/
 
-const chalk = require('chalk')
-const deepEqual = require('./deepEqual.js')
+import chalk from 'chalk'
+import deepEqual from './deepEqual.js'
 
-if (!chalk)
-	throw '`npm install` is necessary'
+class Stage {
+	constructor(name) {
+		this.name = name
+		this.fails = []
+	}
 
+	printResult() {
+		if (this.fails.length) {
+			console.log(chalk.bold.red("✗ "+this.name))
+			for (const fail of this.fails)
+				console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(fail)))
+		}
+		else
+			console.log(chalk.green("✓ "+this.name))
+	}
+}
 
-let
-	currentStage = '',
-	fails = [],
-	totalErrors = 0,
-	stageError = false,
-	runningTest = false,
-	testQueue = []
+class Test {
+	constructor(name, testFunction) {
+		this.name = name && (' ' + chalk.underline(name))
+		this.testFunction = testFunction
+		this.results = []
+		this.currentStage = null
+	}
 
+	fails() {
+		let fails = 0
+		for (const result of this.results) {
+			if (result instanceof Stage)
+				fails += result.fails.length
+			else fails++
+		}
+		return fails
+	}
+
+	async start() {
+		try {
+			await this.testFunction({
+				stage: this.stage.bind(this),
+				test: this.test.bind(this),
+				same: this.same.bind(this),
+				different: this.different.bind(this),
+			})
+			this.printResult()
+		}
+		catch (error) {
+			this.printFatalError(error)
+		}
+	}
+
+	printName() {
+		if (this.name)
+			console.log(chalk.bold.blue(`[${this.name} ]`))
+	}
+
+	printResult() {
+		let fails = 0
+		this.printName()
+		for (const result of this.results) {
+			if (result instanceof Stage) {
+				result.printResult()
+				fails += result.fails.length
+			}
+			else {
+				console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(result)))
+				fails++
+			}
+		}
+
+		if (fails == 1)
+			console.log(chalk.bold.yellow(`One error occured during the test${this.name} ${sad()}\n`))
+		else if (fails > 1)
+			console.log(chalk.bold.yellow(`${fails} errors occured during the test${this.name} ${sad()}\n`))
+		else
+			console.log(chalk.bold.green(`The test${this.name} has successfully passed ${happy()}\n`))
+	}
+
+	printFatalError(error) {
+		this.printName()
+		console.log(chalk.bold.red(`✗ ${this.currentStage.name}`))
+		console.log(chalk.red(`  A critical error occured ${sad()}`))
+		if (error instanceof Error) {
+			console.log(chalk.bold.red(error.message))
+			if (error.code)
+				console.log("Code error "+ error.code)
+			if (error.stdout)
+				console.log(error.stdout)
+			if (error.stderr)
+				console.log(error.stderr)
+		}
+		else console.log(chalk.bold.red(error))
+		console.log()  // newline
+	}
+
+	stage(name='') {
+		this.currentStage = new Stage(name)
+		this.results.push(this.currentStage)
+	}
+
+	test(condition, description = '') {
+		if (condition) return
+		if (this.currentStage) this.currentStage.fails.push(description)
+		else this.results.push(description)
+	}
+
+	same(a, b, description) {
+		this.test(deepEqual(a, b), description)
+	}
+
+	different(a, b, description) {
+		this.test(!deepEqual(a, b), description)
+	}
+}
 
 function happy() {
 	const emojis = ['😏', '😄', '😃', '😉', '😊', '😋', '😌']
@@ -31,85 +132,12 @@ function sad() {
 	return emojis[Math.floor(Math.random() * emojis.length)]
 }
 
-async function start(testFunction) {
-	if (runningTest)
-		return testQueue.push(testFunction)
-	runningTest = true
-
-	let {name} = testFunction
-	if (name) {
-		console.log(chalk.bold.blue("[ " + chalk.underline(name) + " ]"))
+function start(testName, testFunction) {
+	if (typeof testName == 'function') {
+		testFunction = testName
+		testName = ''
 	}
-
-	try {
-		await testFunction()
-		endStage()
-
-		if (totalErrors == 1)
-			console.log(chalk.bold.yellow(`One error occured during the test ${chalk.underline(name)} ${sad()}\n`))
-		else if (totalErrors > 1)
-			console.log(chalk.bold.yellow(`${fails.length} errors occured during the test ${chalk.underline(name)} ${sad()}\n`))
-		else
-			console.log(chalk.bold.green(`The test ${name} has successfully passed ${happy()}\n`))
-	}
-	catch (error) {
-		console.log(chalk.bold.red(`✗ ${currentStage} : a critical error occured ${sad()} :`))
-		if (typeof error == 'object' && error instanceof Error) {
-			console.log(error.message)
-			if (error.code)
-				console.log("Code error "+ error.code)
-			if (error.stdout)
-				console.log(error.stdout)
-			if (error.stderr)
-				console.log(error.stderr)
-		}
-		else
-			console.log(error)
-		console.log()
-	}
-
-	// next test function
-	const next = testQueue.shift()
-	currentStage = ''
-	totalErrors = 0
-	stageError = false
-	runningTest = false
-
-	if (next)
-		start(next)
+	new Test(testName, testFunction).start()
 }
 
-function stage(newStage) {
-	endStage()
-	currentStage = newStage
-}
-
-function endStage() {
-	if (!currentStage)
-		return
-	if (fails.length) {
-		console.log(chalk.bold.red("✗ "+currentStage))
-		for (const fail of fails)
-			console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(fail)))
-		fails.length = 0
-		totalErrors++
-	}
-	else
-		console.log(chalk.green("✓ "+currentStage))
-}
-
-function test(conditionA, description='') {
-	if (!conditionA) fails.push(testDescription)
-}
-
-function same(valueA, valueB, description='') {
-	test(deepEqual(valueA, valueB), description)
-}
-
-module.exports = {
-	start,
-	starTest: start,  // for retro-compatibility
-	stage,
-	test,
-	same,
-}
+export default start

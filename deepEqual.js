@@ -1,4 +1,4 @@
-export default function deepEqual(a, b) {
+function deepEqual(a, b) {
 	if (a === b) return true
 	if (typeof a != typeof b) return false
 	if (typeof a == 'function' || typeof b == 'function') return true
@@ -46,3 +46,5 @@ export default function deepEqual(a, b) {
 
 	return true
 }
+
+export default deepEqual

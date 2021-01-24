@@ -1,10 +1,10 @@
 *FAst and smaRT TESTing*
 
-.. for those who want to enjoy simple and colorful tests without having to learn the whole ecosystem of a rich test library.
-
-![preview](https://i.ibb.co/kXJ7YWV/preview.png)
+.. for those who want to enjoy simple and emoji-augmented tests without having to learn the whole ecosystem of a rich test library.
 
 FarTest is an obvious, colorful and enjoyable test library for small applications. It does not do cool stuff like code coverage, but you'll learn to use in no time.
+
+![success](https://i.ibb.co/TLDkQj8/success.png)
 
 ## Installation
 
@@ -13,79 +13,96 @@ npm install --save-dev fartest
 ```
 
 ## Usage
-FarTest simplest API export four functions :
+FarTest simplest API export one main function :
 
-- `start(test: Function)` - start a new test,
-- `stage(name: string)` - define the current stage inside a test,
-- `test(condition: boolean, name?: string)` - check an assertion inside a test. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
-- `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type : numbers, strings, arrays, maps, sets, ...
-
-And that's all. 
-
-First, let's import the functions we need :
-```javascript
-import { start, stage, test } from 'fartest'
+```ts
+function start(testName?: string, testFunction: ({
+	test?: (condition: boolean, description?: string) => void,
+	same?: (a: any, b: any, description?: string) => void,
+	stage?: (name: string) => void,
+}) => void): void
 ```
 
-Then, we start the test :
-```javascript
+The `testName` parameter is optional but strongly recommanded if you run multiple tests.
+
+The `testFunction` parameter is a function that can take four function arguments :
+
+- `test(condition: boolean, description?: string)` - a general assertion checking. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
+- `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type : numbers, strings, arrays, maps, sets, ...
+- `different(a: any, b: any, name?: string)` - opposite of `same` ; check if two values are strictly unequal.
+- `stage(name: string)` - use it to group unit tests together.
+
+And that's the whole API. 
+
+### Basic example
+Let's create a new test file (can be in Typescript or in pure JS) :
+```ts
+import start from 'fartest'
 // the name of the function (MyAwesomeTest) is the name of the test
 // and is optional
-start(async function MyAwesomeTest() {
+start('My test', async function({stage, test, same, different}) {
+  stage('Basic tests')
+    test(1 == "1", "String and integer loose comparison")
 
-  // we define the current stage of our test
-  stage('Some succesful tests')
-    // simple assertion
-    test(1 == "1")
-
-    // the test description will be displayed in case of error
-    test(21 == "21", "Test description")
-
-  stage('A simple test which will not succeed')
-    test(21 === "21", "Test description")  // will fail because types don't match
-    same(21, "21", "Test description")  // will fail as well
+    // will fail
+    test(1 === "1", "String and integer strict comparison")
+    
+    // will fail as well
+    same(1, "1", "String and integer strict comparison (using same)")
 
   stage('Comparing objects')
-    same({x: 1, y: 2}, {x: 1, y: 2})  // will pass
-
-  stage('Comparing object and array')
-    same(['foo'], {0: 'foo'})  // will not pass
-
-  stage('Crash test')
-    undefined.coco = 321321  // any invalid code will be caught
+    // deep comparison is done
+    same({x: 1, y: 2}, {x: 1, y: 2}, "Deep object comparison")
+    // the object type is also checked
+    different(['foo'], {0: 'foo'}, "Array is not an object")
 })
 ```
+
+Then run it using `node` or a tool like [esrun](https://www.npmjs.com/package/@digitak/esrun) if your file is written in Typescript or in modern JS.
+
+![fail](https://i.ibb.co/YRfmVS4/fail.png)
+
+### Critical errors
+
+Any invalid code will be caught and printed as a critical error.
+
+```ts
+start('Bold test', async function({stage, test}) {
+  stage('It gotta works!!')
+    undefined.x == 12
+})
+```
+
+![critical-fail](https://i.ibb.co/PtGGMbq/critical-fail.png)
+
 
 ### Test asynchronous functions
 
 Because your main test functions is declared as `async` you can just use `await` anywhere you need it.
 
-
 ## Running multiple tests
-You can run multiple tests at once, in which case they will be executed one after another :
-```javascript
+You can run multiple tests at once, in which case they all will be executed simultaneously - the fastest tests will display their results first.
+```ts
 // test 1
-start(async function CoolTest() {
-  stage('1 == 1')
-    test(1 == 1)  // ok, pass
-
-  stage('2 == "2"')
-    test(2 == "2")  // also pass because non-strict equality
-
-  stage('same(2, "2")')
-    same(2, "2")  // does not pass
+start('Slow test', async function({stage, test}) {
+  stage('Basic tests')
+  // let's wait 1 second
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  test(1 == "1", "String and integer loose comparison")
 })
 
 // test 2
-start(async function SuperCoolTest() {
-  stage('3 == 3')
-    test(3 == 3)
+start('Instant test', async function({stage, test}) {
+  stage('Basic tests')
+  test(1 == "1", "String and integer loose comparison")
 })
 ```
 
+![asynchronous](https://i.ibb.co/XLs7wHk/asynchronous.png)
+
 ### Conclusion
-Congratulations! You've learned a new test library in less that 5 minutes!
+Congratulations, you've learned a new test library in less that 5 minutes!
 
-What you waiting for?
+What are you waiting for?
 
-*Let's FarT!*
+Enjoy testing 😌

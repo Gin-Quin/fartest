@@ -1,4 +1,8 @@
-export declare function start(testFunction: Function): void
-export declare function stage(name: string): void
-export declare function test(condition: boolean, description?: string): void
-export declare function same(a: any, b: any, description?: string): void
+type TestFunctionArguments = {
+	stage?: (name: string) => void,
+	test?: (condition: boolean, description?: string) => void,
+	same?: (a: any, b: any, description?: string) => void,
+	different?: (a: any, b: any, description?: string) => void,
+}
+export default function start(testFunction: (arg: TestFunctionArguments) => void): void;
+export default function start(name: string, testFunction: (arg: TestFunctionArguments) => void): void;
