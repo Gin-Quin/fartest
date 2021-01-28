@@ -11,9 +11,11 @@ import util from 'util'
 
 const inspect = value => chalk.white(util.inspect(value, {
 	depth: 2,
-	maxStringLength: 32,
-	maxArrayLength: 4,
+	maxStringLength: 20,
+	maxArrayLength: 3,
 	colors: true,
+	compact: true,
+	breakLength: Infinity,
 }))
 
 class Stage {
@@ -124,10 +126,10 @@ class Test {
 
 	same(a, b, description) {
 		deepEqual(a, b)
-		const { error, key, value } = deepEqualResults
+		const { error, key } = deepEqualResults
 		if (error) {
 			description += '\n    ' + chalk.underline(`${error}`) + (key ? ` at key '${key}'` : '')
-			            +  `:\n    • ${inspect(value[0])}\n    • ${inspect(value[1])}`
+			            +  `:\n    • ${inspect(a)}\n    • ${inspect(b)}`
 			this.test(false, description)
 			return false
 		}

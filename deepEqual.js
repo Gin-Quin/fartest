@@ -1,18 +1,12 @@
 export const deepEqualResults = new class {
 	keys = []
-	values = []
 	error = ""
 
 	pop() {
 		this.keys.pop()
-		this.values.pop()
 	}
-	push(key, value) {
+	push(key) {
 		this.keys.push(key)
-		this.values.push(value)
-	}
-	get value() {
-		return this.values[this.values.length - 1]
 	}
 	get key() {
 		return this.keys
@@ -37,7 +31,7 @@ const done = (error = '') => {
 }
 	
 function deepEqual(a, b, doneObjectComparisons = [], key = '') {
-	deepEqualResults.push(key, [a, b])
+	deepEqualResults.push(key)
 	if (a === b) return done()
 	if (typeof a != typeof b) return done("Types are not the same")
 	if (typeof a != 'object') return done("Values mismatch")
