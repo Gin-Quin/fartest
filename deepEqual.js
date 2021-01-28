@@ -1,3 +1,6 @@
+import inspect from './inspect.js'
+import chalk from 'chalk'
+
 export const deepEqualResults = new class {
 	keys = []
 	error = ""
@@ -55,33 +58,54 @@ function deepEqual(a, b, doneObjectComparisons = [], key = '') {
 		nextFirstSetValue:
 		for (const aValue of a) {
 			for (const bValue of b) {
-				if (deepEqual(aValue, bValue, doneObjectComparisons))
+				if (deepEqual(aValue, bValue, doneObjectComparisons)) {
+					deepEqualResults.pop()
+					deepEqualResults.error = ""
 					continue nextFirstSetValue
+				}
 			}
-			return done(`Missing value '${aValue}' in the second set`)
+			return done(`Missing value ${inspect(aValue, false)} in the second set`)
 		}
 
 		nextSecondSetValue:
-		for (const aValue of b) {
-			for (const bValue of a) {
-				if (deepEqual(aValue, bValue, doneObjectComparisons))
+		for (const bValue of b) {
+			for (const aValue of a) {
+				if (deepEqual(aValue, bValue, doneObjectComparisons)) {
+					deepEqualResults.pop()
+					deepEqualResults.error = ""
 					continue nextSecondSetValue
+				}
 			}
-			return done(`Missing value '${bValue}' in the first set`)
+			return done(`Missing value ${inspect(bValue, false)} in the first set`)
 		}
 	}
 	else if (a instanceof Map || b instanceof Map) {
 		if (!(a instanceof Map) || !(b instanceof Map)) return done("One value is a map but not the other")
 
-		for (const [key, value] of a.entries()) {
-			if (!b.has(key))
-				return done(`Key '${key}' is missing on the second map`)
-			if (!deepEqual(b.get(key), value, doneObjectComparisons, key))
-				return false
+		nextFirstMapValue:
+		for (const [keyA, valueA] of a.entries()) {
+			for (const [keyB, valueB] of b.entries()) {
+				if (deepEqual(keyA, keyB)) {
+					deepEqualResults.pop()
+					deepEqualResults.error = ""
+					if (!deepEqual(valueA, valueB))
+						return false
+					continue nextFirstMapValue
+				}
+			}
+			return done(`Key ${inspect(keyA, false)} is missing in the second map`)
 		}
 
-		for (const key of b.keys()) {
-			if (!a.has(key)) return done(`Key '${key}' is missing in the first map`)
+		nextSecondMapValue:
+		for (const keyB of b.keys()) {
+			for (const keyA of a.keys()) {
+				if (deepEqual(keyA, keyB)) {
+					deepEqualResults.pop()
+					deepEqualResults.error = ""
+					continue nextSecondMapValue
+				}
+			}
+			return done(`Key ${inspect(keyB, false)} is missing in the first map`)
 		}
 	}
 

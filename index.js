@@ -7,16 +7,7 @@
 
 import chalk from 'chalk'
 import deepEqual, { deepEqualResults } from './deepEqual.js'
-import util from 'util'
-
-const inspect = value => chalk.white(util.inspect(value, {
-	depth: 2,
-	maxStringLength: 20,
-	maxArrayLength: 3,
-	colors: true,
-	compact: true,
-	breakLength: Infinity,
-}))
+import inspect from './inspect.js'
 
 class Stage {
 	constructor(name) {
@@ -132,7 +123,7 @@ class Test {
 		deepEqual(a, b)
 		const { error, key } = deepEqualResults
 		if (error) {
-			description += '\n    ' + chalk.underline(`${error}`) + (key ? ` at key '${key}'` : '')
+			description += '\n   ' + (`${error}`) + (key ? ` at key '${key}'` : '')
 			            +  `:\n    • ${inspect(a)}\n    • ${inspect(b)}`
 			this.test(false, description)
 			return false
