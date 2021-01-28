@@ -1,50 +1,104 @@
-function deepEqual(a, b) {
-	if (a === b) return true
-	if (typeof a != typeof b) return false
-	if (typeof a == 'function' || typeof b == 'function') return true
-	if (typeof a != 'object') return false
+export const deepEqualResults = new class {
+	keys = []
+	values = []
+	error = ""
 
-	for (const key in a) {
-		if (!deepEqual(a[key], b[key])) return false
+	pop() {
+		this.keys.pop()
+		this.values.pop()
 	}
-	for (const key in b) {
-		if (!(key in a) && b[key] !== undefined) return false
+	push(key, value) {
+		this.keys.push(key)
+		this.values.push(value)
 	}
+	get value() {
+		return this.values[this.values.length - 1]
+	}
+	get key() {
+		return this.keys
+			.filter(i => i)
+			.map((key, index) => {
+				if (isNaN(key)) return index ? `.${key}` : key
+				else return `[${key}]`
+			})
+			.join('')
+	}
+}
 
-	if (a instanceof Array && !(b instanceof Array)) return false
+const done = (error = '') => {
+	if (error) {
+		deepEqualResults.error = error
+		return false
+	}
+	else {
+		deepEqualResults.pop()
+		return true
+	}
+}
+	
+function deepEqual(a, b, doneObjectComparisons = [], key = '') {
+	deepEqualResults.push(key, [a, b])
+	if (a === b) return done()
+	if (typeof a != typeof b) return done("Types are not the same")
+	if (typeof a != 'object') return done("Values mismatch")
 
-	if (a instanceof Set) {
-		if (!(b instanceof Set)) return false
+	// protection against circular references
+	if (doneObjectComparisons.some(([_a, _b]) => a == _a && b == _b)) {
+		return done()
+	}
+	doneObjectComparisons.push([a, b])
+
+	if (a instanceof Array && !(b instanceof Array) || b instanceof Array && !(a instanceof Array))
+		return done("One value is an array but not the other")
+
+	if (a instanceof Set || b instanceof Set) {
+		if (!(b instanceof Set) || !(a instanceof Set)) return done("One value is a set but not the other")
 		
 		nextFirstSetValue:
 		for (const aValue of a) {
 			for (const bValue of b) {
-				if (deepEqual(aValue, bValue)) continue nextFirstSetValue
+				if (deepEqual(aValue, bValue, doneObjectComparisons))
+					continue nextFirstSetValue
 			}
-			return false
+			return done(`Missing value '${aValue}' in the second set`)
 		}
 
 		nextSecondSetValue:
 		for (const aValue of b) {
 			for (const bValue of a) {
-				if (deepEqual(aValue, bValue)) continue nextSecondSetValue
+				if (deepEqual(aValue, bValue, doneObjectComparisons))
+					continue nextSecondSetValue
 			}
-			return false
+			return done(`Missing value '${bValue}' in the first set`)
 		}
 	}
-	else if (a instanceof Map ) {
-		if (!(b instanceof Map)) return false
+	else if (a instanceof Map || b instanceof Map) {
+		if (!(a instanceof Map) || !(b instanceof Map)) return done("One value is a map but not the other")
 
 		for (const [key, value] of a.entries()) {
-			if (!deepEqual(b.get(key), value)) return false
+			if (!b.has(key))
+				return done(`Key '${key}' is missing on the second map`)
+			if (!deepEqual(b.get(key), value, doneObjectComparisons, key))
+				return false
 		}
 
 		for (const key of b.keys()) {
-			if (!a.has(key)) return false
+			if (!a.has(key)) return done(`Key '${key}' is missing in the first map`)
 		}
 	}
 
-	return true
+	// we now compare the properties
+	for (const key in a) {
+		if (!(key in b) && a[key] !== undefined)
+			return done(`Key '${key}' is missing in the first object`)
+		if (!deepEqual(a[key], b[key], doneObjectComparisons, key))
+			return false
+	}
+	for (const key in b) {
+		if (!(key in a) && b[key] !== undefined) return done(`Key '${key}' is missing in the second object`)
+	}
+
+	return done()
 }
 
 export default deepEqual

@@ -6,7 +6,15 @@
 --------------------------------------*/
 
 import chalk from 'chalk'
-import deepEqual from './deepEqual.js'
+import deepEqual, { deepEqualResults } from './deepEqual.js'
+import util from 'util'
+
+const inspect = value => chalk.white(util.inspect(value, {
+	depth: 2,
+	maxStringLength: 32,
+	maxArrayLength: 4,
+	colors: true,
+}))
 
 class Stage {
 	constructor(name) {
@@ -87,7 +95,7 @@ class Test {
 
 	printFatalError(error) {
 		this.printName()
-		console.log(chalk.bold.red(`✗ ${this.currentStage.name}`))
+		if (this.currentStage) console.log(chalk.bold.red(`✗ ${this.currentStage.name}`))
 		console.log(chalk.red(`  A critical error occured ${sad()}`))
 		if (error instanceof Error) {
 			console.log(chalk.bold.red(error.message))
@@ -108,17 +116,26 @@ class Test {
 	}
 
 	test(condition, description = '') {
-		if (condition) return
+		if (condition) return true
 		if (this.currentStage) this.currentStage.fails.push(description)
 		else this.results.push(description)
+		return false
 	}
 
 	same(a, b, description) {
-		this.test(deepEqual(a, b), description)
+		deepEqual(a, b)
+		const { error, key, value } = deepEqualResults
+		if (error) {
+			description += '\n    ' + chalk.underline(`${error}`) + (key ? ` at key '${key}'` : '')
+			            +  `:\n    • ${inspect(value[0])}\n    • ${inspect(value[1])}`
+			this.test(false, description)
+			return false
+		}
+		return true
 	}
 
 	different(a, b, description) {
-		this.test(!deepEqual(a, b), description)
+		return this.test(!deepEqual(a, b), description)
 	}
 }
 
