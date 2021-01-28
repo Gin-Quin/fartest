@@ -16,16 +16,19 @@ npm install --save-dev fartest
 FarTest simplest API export one main function :
 
 ```ts
-function start(testName?: string, testFunction: ({
-	test?: (condition: boolean, description?: string) => void,
-	same?: (a: any, b: any, description?: string) => void,
+async function start(testName?: string, async testFunction: ({
+	test?: (condition: boolean, description?: string) => boolean,
+	same?: (a: any, b: any, description?: string) => boolean,
+	different?: (a: any, b: any, description?: string) => boolean,
 	stage?: (name: string) => void,
-}) => void): void
+}) => void): number
 ```
+
+The return value is the number of errors encountered during the test.
 
 The `testName` parameter is optional but strongly recommanded if you run multiple tests.
 
-The `testFunction` parameter is a function that can take four function arguments :
+The `testFunction` parameter is a function that can take up to four arguments :
 
 - `test(condition: boolean, description?: string)` - a general assertion checking. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
 - `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type : numbers, strings, arrays, maps, sets, ...

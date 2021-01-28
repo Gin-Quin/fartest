@@ -20,6 +20,7 @@ const inspect = value => chalk.white(util.inspect(value, {
 
 class Stage {
 	constructor(name) {
+		this.errorCount = 0
 		this.name = name
 		this.fails = []
 	}
@@ -62,9 +63,11 @@ class Test {
 				different: this.different.bind(this),
 			})
 			this.printResult()
+			return this.errorCount
 		}
 		catch (error) {
 			this.printFatalError(error)
+			return 1
 		}
 	}
 
@@ -74,23 +77,23 @@ class Test {
 	}
 
 	printResult() {
-		let fails = 0
+		this.errorCount = 0
 		this.printName()
 		for (const result of this.results) {
 			if (result instanceof Stage) {
 				result.printResult()
-				fails += result.fails.length
+				this.errorCount += result.fails.length
 			}
 			else {
 				console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(result)))
-				fails++
+				this.errorCount++
 			}
 		}
 
-		if (fails == 1)
+		if (this.errorCount == 1)
 			console.log(chalk.bold.yellow(`One error occured during the test${this.name} ${sad()}\n`))
-		else if (fails > 1)
-			console.log(chalk.bold.yellow(`${fails} errors occured during the test${this.name} ${sad()}\n`))
+		else if (this.errorCount > 1)
+			console.log(chalk.bold.yellow(`${this.errorCount} errors occured during the test${this.name} ${sad()}\n`))
 		else
 			console.log(chalk.bold.green(`The test${this.name} has successfully passed ${happy()}\n`))
 	}
