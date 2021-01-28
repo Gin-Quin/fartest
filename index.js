@@ -128,6 +128,7 @@ class Test {
 	}
 
 	same(a, b, description) {
+		deepEqualResults.reset()
 		deepEqual(a, b)
 		const { error, key } = deepEqualResults
 		if (error) {
@@ -140,6 +141,7 @@ class Test {
 	}
 
 	different(a, b, description) {
+		deepEqualResults.reset()
 		return this.test(!deepEqual(a, b), description)
 	}
 }

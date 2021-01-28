@@ -8,6 +8,10 @@ export const deepEqualResults = new class {
 	push(key) {
 		this.keys.push(key)
 	}
+	reset() {
+		this.keys = []
+		this.error = ""
+	}
 	get key() {
 		return this.keys
 			.filter(i => i)
