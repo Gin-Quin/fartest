@@ -13,7 +13,7 @@ npm install --save-dev fartest
 ```
 
 ## Usage
-FarTest simplest API export one main function :
+FarTest simplest API export one main function:
 
 ```ts
 async function start(testName?: string, async testFunction: ({
@@ -28,17 +28,17 @@ The return value is the number of errors encountered during the test.
 
 The `testName` parameter is optional but strongly recommanded if you run multiple tests.
 
-The `testFunction` parameter is a function that can take up to four arguments :
+The `testFunction` parameter is a function that can take up to four arguments:
 
 - `test(condition: boolean, description?: string)` - a general assertion checking. If `condition` is `true` then the assertion has succeeded, otherwise it failed. 
-- `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type : numbers, strings, arrays, maps, sets, ...
+- `same(a: any, b: any, name?: string)` - check if two values are the same. When `a` and `b`are objects, execute a deep comparison. Values can be of any type: numbers, strings, arrays, maps, sets, ...
 - `different(a: any, b: any, name?: string)` - opposite of `same` ; check if two values are strictly unequal.
 - `stage(name: string)` - use it to group unit tests together.
 
 And that's the whole API. 
 
 ### Basic example
-Let's create a new test file (can be in Typescript or in pure JS) :
+Let's create a new test file (can be in Typescript or in pure JS):
 ```ts
 import start from 'fartest'
 // the name of the function (MyAwesomeTest) is the name of the test

@@ -5,9 +5,9 @@
 	easy and fast testing.
 --------------------------------------*/
 
-import chalk from 'chalk'
-import deepEqual, { deepEqualResults } from './deepEqual.js'
-import inspect from './inspect.js'
+import chalk from "chalk"
+import deepEqual, { deepEqualResults } from "./deepEqual.js"
+import inspect from "./inspect.js"
 
 class Stage {
 	constructor(name) {
@@ -18,18 +18,16 @@ class Stage {
 
 	printResult() {
 		if (this.fails.length) {
-			console.log(chalk.bold.red("✗ "+this.name))
+			console.log(chalk.bold.red("✗ " + this.name))
 			for (const fail of this.fails)
-				console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(fail)))
-		}
-		else
-			console.log(chalk.green("✓ "+this.name))
+				console.log(chalk.gray("  Error at: " + chalk.reset.bold.red(fail)))
+		} else console.log(chalk.green("✓ " + this.name))
 	}
 }
 
 class Test {
 	constructor(name, testFunction) {
-		this.name = name && (' ' + chalk.underline(name))
+		this.name = name && " " + chalk.underline(name)
 		this.testFunction = testFunction
 		this.results = []
 		this.currentStage = null
@@ -38,8 +36,7 @@ class Test {
 	fails() {
 		let fails = 0
 		for (const result of this.results) {
-			if (result instanceof Stage)
-				fails += result.fails.length
+			if (result instanceof Stage) fails += result.fails.length
 			else fails++
 		}
 		return fails
@@ -54,17 +51,17 @@ class Test {
 				different: this.different.bind(this),
 			})
 			this.printResult()
+			if (!process.exitCode) process.exitCode = this.errorCount ? 10 : 0
 			return this.errorCount
-		}
-		catch (error) {
+		} catch (error) {
 			this.printFatalError(error)
+			process.exitCode = 5
 			return 1
 		}
 	}
 
 	printName() {
-		if (this.name)
-			console.log(chalk.bold.blue(`[${this.name} ]`))
+		if (this.name) console.log(chalk.bold.blue(`[${this.name} ]`))
 	}
 
 	printResult() {
@@ -74,19 +71,26 @@ class Test {
 			if (result instanceof Stage) {
 				result.printResult()
 				this.errorCount += result.fails.length
-			}
-			else {
-				console.log(chalk.gray("  Error at : " + chalk.reset.bold.red(result)))
+			} else {
+				console.log(chalk.gray("  Error at: " + chalk.reset.bold.red(result)))
 				this.errorCount++
 			}
 		}
 
 		if (this.errorCount == 1)
-			console.log(chalk.bold.yellow(`One error occured during the test${this.name} ${sad()}\n`))
+			console.log(
+				chalk.bold.yellow(`One error occured during the test${this.name} ${sad()}\n`)
+			)
 		else if (this.errorCount > 1)
-			console.log(chalk.bold.yellow(`${this.errorCount} errors occured during the test${this.name} ${sad()}\n`))
+			console.log(
+				chalk.bold.yellow(
+					`${this.errorCount} errors occured during the test${this.name} ${sad()}\n`
+				)
+			)
 		else
-			console.log(chalk.bold.green(`The test${this.name} has successfully passed ${happy()}\n`))
+			console.log(
+				chalk.bold.green(`The test${this.name} has successfully passed ${happy()}\n`)
+			)
 	}
 
 	printFatalError(error) {
@@ -95,23 +99,19 @@ class Test {
 		console.log(chalk.red(`  A critical error occured ${sad()}`))
 		if (error instanceof Error) {
 			console.log(chalk.bold.red(error.message))
-			if (error.code)
-				console.log("Code error "+ error.code)
-			if (error.stdout)
-				console.log(error.stdout)
-			if (error.stderr)
-				console.log(error.stderr)
-		}
-		else console.log(chalk.bold.red(error))
-		console.log()  // newline
+			if (error.code) console.log("Code error " + error.code)
+			if (error.stdout) console.log(error.stdout)
+			if (error.stderr) console.log(error.stderr)
+		} else console.log(chalk.bold.red(error))
+		console.log() // newline
 	}
 
-	stage(name='') {
+	stage(name = "") {
 		this.currentStage = new Stage(name)
 		this.results.push(this.currentStage)
 	}
 
-	test(condition, description = '') {
+	test(condition, description = "") {
 		if (condition) return true
 		if (this.currentStage) this.currentStage.fails.push(description)
 		else this.results.push(description)
@@ -123,8 +123,11 @@ class Test {
 		deepEqual(a, b)
 		const { error, key } = deepEqualResults
 		if (error) {
-			description += '\n   ' + (`${error}`) + (key ? ` at key '${key}'` : '')
-			            +  `:\n    • ${inspect(a)}\n    • ${inspect(b)}`
+			description +=
+				"\n   " +
+				`${error}` +
+				(key ? ` at key '${key}'` : "") +
+				`:\n    • ${inspect(a)}\n    • ${inspect(b)}`
 			this.test(false, description)
 			return false
 		}
@@ -138,19 +141,19 @@ class Test {
 }
 
 function happy() {
-	const emojis = ['😏', '😄', '😃', '😉', '😊', '😋', '😌']
+	const emojis = ["😏", "😄", "😃", "😉", "😊", "😋", "😌"]
 	return emojis[Math.floor(Math.random() * emojis.length)]
 }
 
 function sad() {
-	const emojis = ['😓', '😢', '😞', '😩', '😫']
+	const emojis = ["😓", "😢", "😞", "😩", "😫"]
 	return emojis[Math.floor(Math.random() * emojis.length)]
 }
 
 function start(testName, testFunction) {
-	if (typeof testName == 'function') {
+	if (typeof testName == "function") {
 		testFunction = testName
-		testName = ''
+		testName = ""
 	}
 	new Test(testName, testFunction).start()
 }
